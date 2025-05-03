@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Google Sign-In Demo</title>
+
+  <!-- Load Google Sign-In SDK -->
+  <script src="https://apis.google.com/js/platform.js" async defer></script>
+
+  <!-- Replace with your actual client ID -->
+  <meta name="google-signin-client_id" content="341188836175-ueirti2ftnvurshvhj2uqod1dupkq9j0.apps.googleusercontent.com">
+</head>
+<body>
+
+  <h1>Login with Google</h1>
+
+  <!-- Google Sign-In button -->
+  <div class="g-signin2" data-onsuccess="onSignIn" data-cookiepolicy="single_host_origin"></div>
+
+
+
+  <br>
+  <!-- Sign-out button -->
+  <button onclick="signOut()">Sign Out</button>
+
+  <script>
+    function onSignIn(googleUser) {
+      const profile = googleUser.getBasicProfile();
+      console.log("ID: " + profile.getId());
+      console.log("Name: " + profile.getName());
+      console.log("Image URL: " + profile.getImageUrl());
+      console.log("Email: " + profile.getEmail());
+
+      // You can show a welcome message or send the token to your backend
+      alert("Signed in as: " + profile.getName());
+    }
+
+    function signOut() {
+      const auth2 = gapi.auth2.getAuthInstance();
+      auth2.signOut().then(() => {
+        console.log('User signed out.');
+        alert("Signed out");
+      });
+    }
+  </script>
+</body>
+</html>
