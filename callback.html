@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Callback Page</title>
+</head>
+<body>
+  <h1>OAuth Callback</h1>
+  <p>Redirecting...</p>
+  
+  <script>
+    // This script handles the response and redirects the user or completes the sign-in process
+
+    // Parse URL for authentication tokens or response
+    const urlParams = new URLSearchParams(window.location.search);
+    const error = urlParams.get('error');
+    
+    if (error) {
+      console.error("OAuth Error: " + error);
+      alert('Error during sign-in: ' + error);
+      return;
+    }
+
+    const authCode = urlParams.get('code'); // 'code' is the authorization code sent by Google
+
+    // Here, you can send the 'authCode' to your server to exchange for tokens
+    if (authCode) {
+      // Example: Redirect or send the code to your backend for further processing
+      console.log("Authorization Code:", authCode);
+      // Normally you'd use an API here to exchange this code for a token
+    }
+
+    // You can redirect to a success page or home page after completing sign-in
+    setTimeout(() => {
+      window.location.href = "https://aguy-69.github.io/Testing/";
+    }, 2000); // Redirect after 2 seconds
+  </script>
+</body>
+</html>
