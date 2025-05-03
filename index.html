@@ -2,46 +2,66 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Google Sign-In Demo</title>
-
-  <!-- Load Google Sign-In SDK -->
-  <script src="https://apis.google.com/js/platform.js" async defer></script>
-
-  <!-- Replace with your actual client ID -->
-  <meta name="google-signin-client_id" content="341188836175-tifi5gjhrk4efupfngfmn1a4kckqhriq.apps.googleusercontent.com">
+  <title>Google Sign-In with Firebase</title>
 </head>
 <body>
+  <h1>Google Sign-In Demo</h1>
 
-  <h1>Login with Google</h1>
+  <button onclick="signInWithGoogle()">Sign in with Google</button>
+  <button onclick="signOut()">Sign out</button>
 
-  <!-- Google Sign-In button -->
-  <div class="g-signin2" data-onsuccess="onSignIn" data-cookiepolicy="single_host_origin"></div>
+  <p id="user-info">Not signed in</p>
 
-
-
-  <br>
-  <!-- Sign-out button -->
-  <button onclick="signOut()">Sign Out</button>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 
   <script>
-    function onSignIn(googleUser) {
-      const profile = googleUser.getBasicProfile();
-      console.log("ID: " + profile.getId());
-      console.log("Name: " + profile.getName());
-      console.log("Image URL: " + profile.getImageUrl());
-      console.log("Email: " + profile.getEmail());
+    // ✅ Replace this with your own Firebase config (see below)
+    const firebaseConfig = {
+      apiKey: "AIzaSyDeBZpZzCD1ukBccn8DLTISFBDYLFSCvYs",
+      authDomain: "playdots-store.firebaseapp.com",
+      databaseURL: "https://playdots-store-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "playdots-store",
+      storageBucket: "playdots-store.firebasestorage.app",
+      messagingSenderId: "341188836175",
+      appId: "1:341188836175:web:93e2983764a1cbfe54e33a",
+      measurementId: "G-VXG257RTTZ"
+    };
 
-      // You can show a welcome message or send the token to your backend
-      alert("Signed in as: " + profile.getName());
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+
+    // Sign in function
+    function signInWithGoogle() {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      firebase.auth().signInWithPopup(provider)
+        .then((result) => {
+          const user = result.user;
+          document.getElementById("user-info").innerText =
+            `Signed in as: ${user.displayName} (${user.email})`;
+        })
+        .catch((error) => {
+          console.error("Sign-in error:", error.message);
+        });
     }
 
+    // Sign out function
     function signOut() {
-      const auth2 = gapi.auth2.getAuthInstance();
-      auth2.signOut().then(() => {
-        console.log('User signed out.');
-        alert("Signed out");
+      firebase.auth().signOut().then(() => {
+        document.getElementById("user-info").innerText = "Not signed in";
       });
     }
+
+    // Show signed-in user info on page load
+    firebase.auth().onAuthStateChanged((user) => {
+      if (user) {
+        document.getElementById("user-info").innerText =
+          `Signed in as: ${user.displayName} (${user.email})`;
+      } else {
+        document.getElementById("user-info").innerText = "Not signed in";
+      }
+    });
   </script>
 </body>
 </html>
