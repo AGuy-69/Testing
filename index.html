@@ -377,6 +377,7 @@
       document.getElementById('adminPanel').style.display = 'block';
       renderAdminProducts();
     } else {
+      const randomIndex = Math.floor(Math.random() * deniedMessages.length);
       alert(deniedMessages[randomIndex]);
     }
   }
