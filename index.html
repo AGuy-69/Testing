@@ -364,25 +364,13 @@
     console.error("❌ Admins.json", err);
   });
 
-  // Google sign in
-  function signInWithGoogle() {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    firebase.auth().signInWithPopup(provider)
-      .then((result) => {
-        const user = result.user;
-      })
-      .catch((error) => {
-        console.error("Sign-in error:", error.message);
-      });
-  }
-
   function checkLoginInfo() {
     const user = firebase.auth().currentUser;
 
     // Skip if already loaded
     if (userInfo !== null) {
       console.log("User info already stored.");
-      if (userInfo && allowedEmails.includes(userInfo.email)) {
+      if (allowedEmails.includes(userInfo.email)) {
         console.log("Opening AdminProducts")
         renderAdminProducts();
       }
