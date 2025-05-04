@@ -363,13 +363,21 @@
     console.error("❌ Admins.json", err);
   });
 
+  const deniedMessages = [
+  "You're not an admin, sorry!",
+  "Access denied.",
+  "Nope. Try again.",
+  "Nice try, but you're not on the list.",
+  "Bitch you're not an admin are you?"
+  ];
+  
   function checkLoginInfo() {
     if (allowedEmails.includes(userInfo.email)) {
       console.log("Opening AdminProducts");
       document.getElementById('adminPanel').style.display = 'block';
       renderAdminProducts();
     } else {
-      alert("Bitch you're not an admin are you?");
+      alert(deniedMessages[randomIndex]);
     }
   }
   
