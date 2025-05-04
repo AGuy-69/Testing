@@ -383,9 +383,9 @@
     if (userInfo !== null) {
       console.log("User info already stored.");
       if (userInfo && allowedEmails.includes(userInfo.email)) {
+        console.log("Opening AdminProducts")
         renderAdminProducts();
       }
-      return;
     }
 
     if (user) {
