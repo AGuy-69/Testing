@@ -1,67 +1,727 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Google Sign-In with Firebase</title>
+  <link rel="icon" href="Icon.ico" sizes="16x16" type="image/x-icon">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Playdots Store</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <style>
+    body {
+      font-family: 'Helvetica', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f0f2f5;
+      color: #333;
+    }
+    header {
+      background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%);
+      color: #fff;
+      padding: 1.5em;
+      text-align: center;
+      font-size: 1.5em;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+    footer {
+      background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%);
+      color: #fff;
+      padding: 1.5em;
+      text-align: center; /* Horizontal alignment */
+      font-size: 0.8em;
+      font-weight: bold;
+      letter-spacing: 1px;
+      min-height: 80px;
+      
+      display: flex;          /* Enable flexbox */
+      justify-content: center; /* Center horizontally */
+      align-items: center;     /* Center vertically */
+    }
+    main {
+      padding: 2em;
+      max-width: 100%;
+      margin: auto;
+    }
+    h2, h3 {
+      color: #444;
+      margin-top: 1em;
+    }
+    .products, .cart {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5em;
+      margin-top: 1em;
+    }
+    .product, .cart-item {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+      padding: 1em;
+      flex: 1 1 200px;
+      transition: transform 0.2s ease;
+    }
+    .products-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 300px));
+      gap: 20px;
+      justify-content: center;
+    }
+    .product-card {
+      background: white;
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .product:hover, .cart-item:hover {
+      transform: translateY(-5px);
+    }
+    .product img {
+      max-width: 100%; /* Ensure the image scales to fit within the container */
+      height: 150px; /* Set a fixed height for consistency */
+      object-fit: cover; /* This ensures the image covers the area without distortion */
+      border-radius: 6px;
+      display: block; /* Make sure the image is a block element */
+      margin: 0 auto; /* This centers the image horizontally */
+      text-align: center; /* Ensures it's centered within its parent */
+    }
+    button {
+      background: #2575fc;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 0.6em 1.2em;
+      margin-top: 0.5em;
+      cursor: pointer;
+      transition: background 0.3s;
+      font-weight: bold;
+    }
+    button:hover {
+      background: #1a5ed8;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 0.7em;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      margin-top: 0.5em;
+    }
+    textarea {
+      resize: vertical;
+    }
+    #systemLog {
+      background: #f8f9fa;
+      padding: 1em;
+      border-radius: 8px;
+      height: 200px;
+      overflow-y: auto;
+      font-size: 0.9em;
+    }
+    .admin-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #e74c3c;
+      font-weight: bold;
+      border: none;
+      padding: 0.8em 1.5em;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    .overlay {
+      display: none;
+      position: fixed;
+      top:0; left:0; width:100%; height:100%;
+      background: rgba(0,0,0,0.4);
+      z-index: 1000;
+    }
+    .admin-panel {
+      display: none;
+      position: fixed;
+      top: 0; right: 0;
+      width: 400px; height: 100%;
+      background: #fff;
+      padding: 2em;
+      box-shadow: -3px 0 8px rgba(0,0,0,0.2);
+      overflow-y: auto;
+      z-index: 1001;
+    }
+    .admin-panel h2 {
+      margin-top: 0;
+      color: #2575fc;
+    }
+    .admin-panel button {
+      width: 100%;
+      margin-top: 1em;
+    }
+    #pwPrompt .pw-box {
+      background: #fff;
+      padding: 2em;
+      margin: 15% auto;
+      border-radius: 10px;
+      max-width: 300px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      text-align: center;
+    }
+    .cart-item {
+      display: flex;
+      justify-content: space-between; /* Pushes the text to the left and the button to the right */
+      align-items: center; /* Vertically centers the items */
+      background: #fff;
+      border: 1px solid #ddd;
+      padding: 1em;
+      border-radius: 6px;
+      flex: 1; /* Ensures it stretches to take full available width */
+      box-sizing: border-box;
+      min-width: 150px; /* Optional: You can set a minimum width */
+      max-height: 80px; /* Optional: Limits the height of the item */
+    }
+
+    .cart {
+      display: flex;
+      flex-direction: column;  /* Stack items vertically */
+      gap: 1.5em;
+      margin-top: 1em;
+    }
+
+    .cart-item span {
+      flex: 1 0 auto; /* Makes sure the text takes the available space, but doesn't stretch */
+      text-align: left; /* Aligns text to the left */
+    }
+    
+    /* When only one item, make the cart holder smaller */
+    .cart.shrink {
+      min-height: 100px; /* Smaller height when there’s one product */
+    }
+
+    .product {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+      padding: 1em;
+      flex: 1 1 200px; /* Allow cards to grow, but start with a 200px width */
+      max-width: 180px; /* Set a max-width to revent cards from stretching too much */
+      transition: transform 0.2s ease;
+    }
+    
+  </style>
 </head>
 <body>
-  <h1>Google Sign-In Demo</h1>
+<header>
+  <h1>Playdots Store</h1>
+</header>
 
-  <button onclick="signInWithGoogle()">Sign in with Google</button>
-  <button onclick="signOut()">Sign out</button>
 
-  <p id="user-info">Not signed in</p>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<main>
+  <p>Currency: <span id="currencySymbol">Rp</span></p>
 
-  <script>
-    // ✅ Replace this with your own Firebase config (see below)
-    const firebaseConfig = {
-      apiKey: "AIzaSyDeBZpZzCD1ukBccn8DLTISFBDYLFSCvYs",
-      authDomain: "playdots-store.firebaseapp.com",
-      databaseURL: "https://playdots-store-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "playdots-store",
-      storageBucket: "playdots-store.firebasestorage.app",
-      messagingSenderId: "341188836175",
-      appId: "1:341188836175:web:93e2983764a1cbfe54e33a",
-      measurementId: "G-VXG257RTTZ"
-    };
+  <section>
+    <h2>Products</h2>
+    <div class="products" id="productsContainer"></div>
+  </section>
 
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
+  <section>
+    <h2>Your Cart</h2>
+    <div class="cart" id="cartContainer"></div>
+    <p>Subtotal: <span id="subtotalDisplay">0.00</span></p>
+    <p>Discount: <span id="discountDisplay">0%</span></p>
+    <p>Fee: <span id="feeDisplay">0.00</span></p>
+    <h3>Final Total: <span id="finalTotalDisplay">0.00</span></h3>
+    <button onclick="checkout()">Checkout</button>
+  </section>
 
-    // Sign in function
-    function signInWithGoogle() {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      firebase.auth().signInWithPopup(provider)
-        .then((result) => {
-          const user = result.user;
-          document.getElementById("user-info").innerText =
-            `Signed in as: ${user.displayName} (${user.email})`;
-        })
-        .catch((error) => {
-          console.error("Sign-in error:", error.message);
-        });
-    }
+  <section>
+    <h3>Enter Bill to Calculate Change</h3>
+    <input type="number" id="billAmount" placeholder="Enter bill amount"/>
+    <button onclick="calculateChange()">Calculate Change</button>
+    <p>Change: <span id="changeDisplay">0.00</span></p>
+  </section>
 
-    // Sign out function
-    function signOut() {
-      firebase.auth().signOut().then(() => {
-        document.getElementById("user-info").innerText = "Not signed in";
-      });
-    }
+  <section>
+    <h3>Cashier Notes</h3>
+    <textarea id="cashierNotes" rows="4" placeholder="Enter notes here..."></textarea>
+    <button onclick="saveNotes()">Save Notes</button>
+  </section>
+</main>
 
-    // Show signed-in user info on page load
+<script>
+  window.onload = function() {
+    loadNotes();
+  };
+</script>
+
+<button class="admin-btn" onclick="checkLoginInfo()">Admin</button>
+<div class="overlay" id="overlay"></div>
+
+<div class="admin-panel" id="adminPanel">
+  <h2>Admin Panel</h2>
+  <button onclick="closeAdmin()">Close</button>
+
+  <h3>Products</h3>
+  <div id="adminProducts"></div>
+  <h4>Add New Product</h4>
+  <input id="newName" placeholder="Name"/>
+  <input id="newPrice" type="number" placeholder="Price (Rupiah)"/>
+  <input id="newImage" placeholder="Image URL"/>
+  <button onclick="adminAddProduct()">Add Product</button>
+
+  <h3>Promos & Fees</h3>
+  <label>Discount (%)</label>
+  <input id="adminDiscount" type="number" value="0"/>
+  <label>Additional Fee (Rupiah)</label>
+  <input id="adminFee" type="number" value="0"/>
+  <button onclick="applyCheckoutMods()">Apply</button>
+
+  <h3>System Log</h3>
+  <div id="systemLog"></div>
+
+  <button style="margin-top:1em;background:#e74c3c;" onclick="deleteAllData()">Delete All Data</button>
+</div>
+
+<div id="pwPrompt" class="overlay">
+  <div style="background:#fff;padding:1em;margin:15% auto;max-width:300px;">
+    <p>Enter Admin Passcode:</p>
+    <input type="password" id="adminPassInput" placeholder="••••••" style="width: 205px;"/>
+    <button onclick="checkAdminPass()">Enter</button>
+    <button onclick="hidePasswordPrompt()">Cancel</button>
+  </div>
+</div>
+<footer>
+  <p>© 2025 PlayDots-store. All rights reserved.</p>
+  <p><a href="mailto:ilikepython123@gmail.com" style="color:#fff; padding: 10px;">Contact Support</a></p>
+</footer>
+<script>
+  // Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyDeBZpZzCD1ukBccn8DLTISFBDYLFSCvYs",
+    authDomain: "playdots-store.firebaseapp.com",
+    databaseURL: "https://playdots-store-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "playdots-store",
+    storageBucket: "playdots-store.firebasestorage.app",
+    messagingSenderId: "341188836175",
+    appId: "1:341188836175:web:93e2983764a1cbfe54e33a",
+    measurementId: "G-VXG257RTTZ"
+  };
+
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  const database = firebase.database();
+  // Initialize Firebase
+  const app = firebase.initializeApp(firebaseConfig);
+  const provider = new firebase.auth.GoogleAuthProvider();
+
+  firebase.auth().signInWithPopup(provider)
+  .then((result) => {
+    console.log("✅ Sign-in successful:", result.user.email);
+  })
+  .catch((error) => {
+    console.error("❌ Sign-in error:", error);
+  });
+
+  //Fetches admin users
+  let userInfo = null;
+  let allowedEmails = [];
+  fetch("Admins.json")
+  .then(res => res.json())
+  .then(data => {
+    allowedEmails = data;
+    console.log("✅ Allowed email list loaded:", allowedEmails);
+
+    // Check login only after email list is loaded
     firebase.auth().onAuthStateChanged((user) => {
       if (user) {
-        document.getElementById("user-info").innerText =
-          `Signed in as: ${user.displayName} (${user.email})`;
+        // User is signed in
+        userInfo = {
+          name: user.displayName,
+          email: user.email,
+          photoURL: user.photoURL,
+          uid: user.uid
+        };
+    
+        console.log("✅ User is signed in:", userInfo);
+    
+        // Check if the email is allowed
+        if (allowedEmails.includes(userInfo.email)) {
+          console.log("✅ Allowed email:", userInfo.email);
+        } else {
+          console.log("❌ Email not allowed:", userInfo.email);
+          firebase.auth().signOut();
+          alert("Access denied.");
+        }
+    
       } else {
-        document.getElementById("user-info").innerText = "Not signed in";
+        // No user signed in
+        console.log("No user is signed in.");
       }
     });
-  </script>
+  })
+  .catch(err => {
+    console.error("❌ Admins.json", err);
+  });
+
+  // Google sign in
+  function signInWithGoogle() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    firebase.auth().signInWithPopup(provider)
+      .then((result) => {
+        const user = result.user;
+      })
+      .catch((error) => {
+        console.error("Sign-in error:", error.message);
+      });
+  }
+
+  function checkLoginInfo() {
+    const user = firebase.auth().currentUser;
+
+    // Skip if already loaded
+    if (userInfo !== null) {
+      console.log("User info already stored.");
+      if (userInfo && allowedEmails.includes(userInfo.email)) {
+        renderAdminProducts()
+      }
+      return;
+    }
+
+    if (user) {
+      userInfo = {
+        name: user.displayName,
+        email: user.email,
+        photoURL: user.photoURL,
+        uid: user.uid
+      };
+
+      if (userInfo && allowedEmails.includes(userInfo.email)) {
+        renderAdminProducts()
+      }
+    } else {
+      console.log("No user is signed in.");
+    }
+  }
+
+  // Run once when auth state changes
+  firebase.auth().onAuthStateChanged(() => {
+    checkLoginInfo();
+  });
+
+  function saveProduct() {
+    const name = document.getElementById('newName').value;
+    const price = parseFloat(document.getElementById('newPrice').value);
+    const image = document.getElementById('newImage').value;
+
+    if (!name || !price) {
+      alert("Please enter all fields.");
+      return;
+    }
+
+    // Save to Firebase
+    const productId = Date.now(); // unique ID
+    firebase.database().ref('products/' + productId).set({
+      name: name,
+      price: parseFloat(price)
+    }).then(() => {
+      alert("Product saved!");
+    }).catch((error) => {
+      console.error("Error saving product:", error);
+    });
+  }
+  let products = JSON.parse(localStorage.getItem('products')) || [
+    { name: 'Fidget Spinner', price: 50000, image: 'https://via.placeholder.com/150' },
+    { name: 'Fidget Cube', price: 70000, image: 'https://via.placeholder.com/150' },
+    { name: 'Stress Ball', price: 40000, image: 'https://via.placeholder.com/150' }
+  ];
+  let cart = [];
+  let discount = parseFloat(localStorage.getItem('discount')) || 0;
+  let fee = parseFloat(localStorage.getItem('fee')) || 0;
+  const ADMIN_PASS = 'playdots123';
+  let systemLog = JSON.parse(localStorage.getItem('systemLog')) || [];
+  let cashierNotes = localStorage.getItem('cashierNotes') || '';
+
+  // Load cashier notes
+  document.getElementById('cashierNotes').value = cashierNotes;
+  async function loadProductsFromFirebase() {
+    const snapshot = await firebase.database().ref('products').once('value');
+    const data = snapshot.val();
+    
+    products = [];
+  
+    if (data) {
+      for (const id in data) {
+        products.push({
+          id,
+          ...data[id]
+        });
+      }
+    }
+  
+    renderProducts();  // Call your render function after loading
+  }
+  
+  async function renderProducts() {
+  const cont = document.getElementById('productsContainer');
+  cont.innerHTML = ''; // Clear previous products
+
+  try {
+    const snapshot = await firebase.database().ref('products').once('value');
+    const productsData = snapshot.val();
+
+    if (productsData) {
+      for (const id in productsData) {
+        const product = productsData[id];
+
+        const d = document.createElement('div');
+        d.className = 'product';
+        d.innerHTML = `
+          <img src="${product.image}" alt="${product.name}" />
+          <h4>${product.name}</h4>
+          <p>Rp ${product.price.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&.')}</p>
+          <button onclick="addToCart('${id}')">Add to Cart</button>
+        `;
+        cont.appendChild(d);
+      }
+    } else {
+      cont.innerHTML = '<p>No products available.</p>';
+    }
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    cont.innerHTML = '<p>Error loading products.</p>';
+  }
+}
+
+  
+  function renderAdminProducts() {
+    const adminProducts = document.getElementById('adminProducts');
+    adminProducts.innerHTML = ''; // Clear current products in admin panel
+
+    // Fetch the products from Firebase
+    const productsRef = database.ref('products');
+    productsRef.once('value')
+      .then(snapshot => {
+        if (snapshot.exists()) {
+          const products = snapshot.val(); // Get all products
+
+          // Loop through the products and create the UI
+          Object.keys(products).forEach((key, i) => {
+            const p = products[key]; // Access product data by its key
+            const productDiv = document.createElement('div');
+            productDiv.className = 'product';
+            productDiv.innerHTML = `
+              <h4>${p.name}</h4>
+              <p>Price: Rp ${p.price}</p>
+              <button onclick="deleteProduct('${key}')">Delete Product</button>
+            `;
+            adminProducts.appendChild(productDiv);
+          });
+        } else {
+          adminProducts.innerHTML = '<p>No products available.</p>';
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching products:', error);
+      });
+  }
+
+
+  function deleteProduct(productId) {
+    if (confirm('Are you sure you want to delete this product?')) {
+      // Delete the product from Firebase
+      const productRef = database.ref('products/' + productId);
+      productRef.remove()
+        .then(() => {
+          console.log('Product deleted successfully');
+          renderAdminProducts(); // Re-render the admin panel after deletion
+        })
+        .catch(error => {
+          console.error('Error deleting product:', error);
+        });
+    }
+  }
+
+
+  function saveNotes() {
+    const notes = document.getElementById('cashierNotes').value;
+    database.ref('cashierNotes').set(notes)
+      .then(() => {
+        alert('Notes saved to Firebase!');
+      })
+      .catch((error) => {
+        console.error('Error saving notes:', error);
+        alert('Failed to save notes.');
+      });
+  }
+
+  function loadNotes() {
+    database.ref('cashierNotes').once('value')
+      .then(snapshot => {
+        const notes = snapshot.val();
+        if (notes) {
+          document.getElementById('cashierNotes').value = notes;
+        } else {
+          document.getElementById('cashierNotes').value = ''; // If no notes, clear it
+        }
+      })
+      .catch(error => {
+        console.error('Error loading notes:', error);
+      });
+  }
+  
+  
+  function renderCart() {
+    const cont = document.getElementById('cartContainer');
+    cont.innerHTML = ''; // Clear current cart items
+  
+    if (cart.length > 0) {
+      cont.parentElement.querySelector('.cart').classList.add('shrink');
+    } else {
+      cont.parentElement.querySelector('.cart').classList.remove('shrink');
+    }
+  
+    // Loop through each item in the cart and display it
+    cart.forEach((item, i) => {
+      const d = document.createElement('div');
+      d.className = 'cart-item';
+      d.innerHTML = `
+        <span style="width: 80%;">${item.name} Rp ${item.price.toLocaleString('id-ID')} x ${item.qty} = Rp ${(item.price * item.qty).toLocaleString('id-ID')}</span>
+        <span style="width: 5%; text-align: center;"><button onclick="changeQty(${i},-1)">–</button></span>
+        <span style="width: 5%; text-align: center;">${item.qty}</span>
+        <span style="width: 5%; text-align: center;"><button onclick="changeQty(${i},+1)">+</button></span>
+        <span style="width: 5%; text-align: center;"><button onclick="removeCart(${i})">✕</button></span>
+      `;
+      cont.appendChild(d); // Append the new cart item under the previous ones
+    });
+  
+    updateTotals(); // Update the totals after rendering
+  }  
+
+  function updateTotals(){
+    const sub = cart.reduce((a,i)=>a + i.price*i.qty, 0);
+    document.getElementById('subtotalDisplay').innerText = 'Rp ' + sub.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    document.getElementById('discountDisplay').innerText = discount + '%';
+    document.getElementById('feeDisplay').innerText = fee.toFixed(2);
+    const final = sub*(1 - discount/100) + fee;
+    document.getElementById('finalTotalDisplay').innerText = 'Rp ' + final.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function addToCart(productId) {
+    const productRef = database.ref("products/" + productId);
+    productRef.once("value")
+      .then(snapshot => {
+        if (snapshot.exists()) {
+          const product = snapshot.val();
+          console.log(product);
+          
+          // Check if the item already exists in the cart
+          const index = cart.findIndex(cartItem => cartItem.id === productId);
+          if (index !== -1) {
+            cart[index].qty += 1; // If it exists, increase quantity
+          } else {
+            cart.push({...product, qty: 1}); // If it doesn't exist, add it with qty 1
+          }
+    
+          console.log(cart); // Debugging: log the cart after adding the item
+          renderCart(); // Re-render the cart to reflect the new item
+        } else {
+          console.error("Product not found!");
+        }
+      })
+      .catch(error => {
+        console.error("Error getting product:", error);
+      });
+  }  
+
+  function changeQty(i,delta){
+    cart[i].qty += delta;
+    if(cart[i].qty<1) cart.splice(i,1);
+    renderCart();
+  }
+
+  function removeCart(i){
+    cart.splice(i,1); renderCart();
+  }
+
+  function checkout(){
+    alert('Total due: Rp ' + document.getElementById('finalTotalDisplay').innerText);
+    cart=[]; renderCart();
+  }
+
+  function calculateChange() {
+    const bill = parseFloat(document.getElementById('billAmount').value);
+    
+    // Get total text and clean it (remove "Rp", commas, and periods if needed)
+    const totalText = document.getElementById('finalTotalDisplay').innerText;
+    const totalClean = totalText.replace(/[^\d.-]/g, ''); // Remove "Rp" and any commas
+    const total = parseFloat(totalClean);
+    console.log(totalClean, bill, bill - (totalClean * 1000))
+    if (isNaN(bill)) {
+      return alert('Please enter a valid bill amount');
+    }
+  
+    const change = bill - (totalClean * 1000);
+    document.getElementById('changeDisplay').innerText = change.toLocaleString('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0
+    });
+  }  
+
+  function showAdminPassword() {
+    document.getElementById('pwPrompt').style.display = 'block';
+  }
+
+  function hidePasswordPrompt() {
+    document.getElementById('pwPrompt').style.display = 'none';
+  }
+
+  function checkAdminPass() {
+    const pass = document.getElementById('adminPassInput').value;
+    if (pass === ADMIN_PASS) {
+      document.getElementById('pwPrompt').style.display = 'none';
+      document.getElementById('adminPanel').style.display = 'block';
+      renderAdminProducts(); // Render admin products list when admin logs in
+    } else {
+      alert('Incorrect password!');
+    }
+  }
+
+  function closeAdmin() {
+    document.getElementById('adminPanel').style.display = 'none';
+  }
+
+  function adminAddProduct() {
+    const name = document.getElementById('newName').value;
+    const price = parseFloat(document.getElementById('newPrice').value);
+    const image = document.getElementById('newImage').value;
+
+    if (!name || isNaN(price) || !image) {
+      alert('Please enter all fields');
+      return;
+    }
+
+    const newProduct = { name, price, image };
+    products.push(newProduct);
+    localStorage.setItem('products', JSON.stringify(products)); // Update localStorage
+    // Save to Firebase
+    const productId = Date.now(); // unique ID
+    firebase.database().ref('products/' + productId).set({
+      name: name,
+      price: parseFloat(price),
+      image: image
+    }).then(() => {
+      alert("Product saved!");
+    }).catch((error) => {
+      console.error("Error saving product:", error);
+    });
+    renderProducts(); // Re-render products
+    renderAdminProducts(); // Re-render admin panel product list
+  }
+
+  renderProducts();
+  
+</script>
 </body>
 </html>
