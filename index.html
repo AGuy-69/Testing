@@ -365,31 +365,11 @@
   });
 
   function checkLoginInfo() {
-    const user = firebase.auth().currentUser;
-
-    // Skip if already loaded
-    if (userInfo !== null) {
-      console.log("User info already stored.");
-      if (allowedEmails.includes(userInfo.email)) {
-        console.log("Opening AdminProducts")
-        renderAdminProducts();
+    if (allowedEmails.includes(userInfo.email)) {
+      console.log("Opening AdminProducts")
+      document.getElementById('adminPanel').style.display = 'block';
+      renderAdminProducts();
       }
-    }
-
-    if (user) {
-      userInfo = {
-        name: user.displayName,
-        email: user.email,
-        photoURL: user.photoURL,
-        uid: user.uid
-      };
-
-      if (userInfo && allowedEmails.includes(userInfo.email)) {
-        renderAdminProducts()
-      }
-    } else {
-      console.log("No user is signed in.");
-    }
   }
 
   // Run once when auth state changes
