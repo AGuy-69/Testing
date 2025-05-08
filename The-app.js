@@ -89,8 +89,10 @@
       price: parseFloat(price)
     }).then(() => {
       alert("Product saved!");
+      logEvent("INFO", `${userInfo.email} added ${productId}`);
     }).catch((error) => {
       console.error("Error saving product:", error);
+      logEvent("ERROR", "Failed to save the product");
     });
   }
   let products = JSON.parse(localStorage.getItem('products')) || [
@@ -194,6 +196,7 @@
     if (confirm('Are you sure you want to delete this product?')) {
       // Delete the product from Firebase
       const productRef = database.ref('products/' + productId);
+      logEvent("INFO", `${userInfo.email} deleted ${product.ref}`);
       productRef.remove()
         .then(() => {
           console.log('Product deleted successfully');
@@ -201,6 +204,7 @@
         })
         .catch(error => {
           console.error('Error deleting product:', error);
+          logEvent("ERROR", 'Failed to delete product');
         });
     }
   }
