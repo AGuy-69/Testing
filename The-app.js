@@ -198,7 +198,7 @@
       // Delete the product from Firebase
       const productRef = database.ref('products/' + productId);
       const email = userInfo?.email || "Unknown user";
-      logEvent("INFO", `${email} deleted ${product.ref}`);
+      logEvent("INFO", `${email} deleted ${productRef}`);
       productRef.remove()
         .then(() => {
           console.log('Product deleted successfully');
@@ -212,6 +212,7 @@
   }
 
   function logEvent(type, message) {
+    console.log("new logs saved")
     const logRef = database.ref("logs").push();
     logRef.set({
       type: type,
