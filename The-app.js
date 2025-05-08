@@ -205,6 +205,14 @@
     }
   }
 
+  function logEvent(type, message) {
+    const logRef = database.ref("logs").push();
+    logRef.set({
+      type: type,
+      message: message,
+      timestamp: new Date().toISOString()
+    });
+  }
 
   function saveNotes() {
     const notes = document.getElementById('cashierNotes').value;
