@@ -249,13 +249,6 @@
   </section>
 </main>
 
-<script>
-  window.onload = function() {
-    loadNotes();
-    liveLogUpdates();
-  };
-</script>
-
 <button class="admin-btn" onclick="checkLoginInfo()">Admin</button>
 <div class="overlay" id="overlay"></div>
 
@@ -300,5 +293,11 @@
 </footer>
 <script src="firebase-config.js"></script>
 <script src="The-app.js"></script>
+<script>
+  window.onload = function() {
+    loadNotes();
+    liveLogUpdates();
+  };
+</script>
 </body>
 </html>
