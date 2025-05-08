@@ -216,9 +216,12 @@
 
   function saveNotes() {
     const notes = document.getElementById('cashierNotes').value;
+    const email = userInfo?.email || "Unknown user";
     database.ref('cashierNotes').set(notes)
       .then(() => {
         alert('Notes saved to Firebase!');
+        logEvent("INFO", `${email} updated the notes`);
+
       })
       .catch((error) => {
         console.error('Error saving notes:', error);
