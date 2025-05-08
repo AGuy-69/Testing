@@ -214,6 +214,19 @@
     });
   }
 
+  function liveLogUpdates() {
+    const logContainer = document.getElementById('systemLog');
+    const logsRef = firebase.database().ref("logs").orderByChild("timestamp");
+
+    logsRef.on("child_added", snapshot => {
+      const log = snapshot.val();
+      const logEntry = document.createElement("div");
+      logEntry.textContent = `[${log.timestamp}] ${log.type}: ${log.message}`;
+      logContainer.appendChild(logEntry);
+    });
+  }
+
+
   function saveNotes() {
     const notes = document.getElementById('cashierNotes').value;
     const email = userInfo?.email || "Unknown user";
