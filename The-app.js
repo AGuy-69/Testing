@@ -194,6 +194,7 @@
 
 
   function deleteProduct(productId) {
+    console.log('Attempting to delete product with ID:', productId);
     if (confirm('Are you sure you want to delete this product?')) {
       // Delete the product from Firebase
       const productRef = database.ref('products/' + productId);
